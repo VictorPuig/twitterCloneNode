@@ -2,29 +2,28 @@ var _async = require('async');
 var moment = require('moment');
 //var timeFormat = "YYYY-MM-DD:HH:mm:ss:ZZ";
 var computeTwitTime = function computeTwitTime(t) {
-  console.log("twits1", t);
+  var twits = t;
   _async.map(t, function(el, cb) {
-    //console.log(moment().diff(el.time, 'minutes'));
-    //console.log(moment.duration(moment().diff(el.time)).humanize());
     el.time = moment().diff(el.timestamp, 'minutes');
-//    console.log(moment().diff(el.time, 'minutes'));
-
     cb(null, el);
   }, function (err, twits) {
-    console.log("twits2", twits);
-    return twits;
+    twits.time = t.time;
   });
+  return twits;
 }
 
 module.exports = function(router) {
   var Twit = require('../models/Twit');
+
   router.route('/twits')
   .get(function (req, res) {
     Twit.find()
+    .lean()
     .exec(function (err, twits) {
       if (err)
         return res.send(err);
-      res.send(twits);
+        twits = computeTwitTime(twits);
+      res.json(twits);
     })
   })
   .post(function (req, res) {
@@ -34,11 +33,11 @@ module.exports = function(router) {
       twit.text = req.body.text;
     if (req.body.img)
       twit.img = req.body.img;
-    if (req.body.title)
-      twit.title = req.body.title;
+    if (req.body.author)
+      twit.author = req.body.author;
 
-    twit.time = moment();
-
+    twit.timestamp = moment();
+    console.log("twiiiit: ", twit);
     twit.save(function(err, newTwit) {
       if (err) {
         console.log(err);
@@ -46,5 +45,18 @@ module.exports = function(router) {
       }
       return res.json(newTwit);
     });
+  });
+
+  router.route('/twits/:twit_id')
+  .delete(function (req, res) {
+    Twit.remove({
+      _id: req.params.twit_id
+    }, function(err, twit) {
+      if (err) {
+        console.log(err);
+        return res.send(err);
+      }
+      res.json({ message: 'Successfully deleted' });
+    })
   });
 }

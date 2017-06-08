@@ -4,7 +4,7 @@ var Schema       = mongoose.Schema;
 var TwitSchema   = new Schema({
     text: String,
     img: String,
-    title: String,
+    author: String,
     timestamp: Date
 });
 
