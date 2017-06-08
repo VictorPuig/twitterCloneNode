@@ -26,7 +26,7 @@ app.use(cors());
 var router = express.Router();              // get an instance of the express Router
 
 require ('./routes/twits') (router);
-
+require ('./routes/users') (router);
 app.use(function (req, res, next) {
 
   res.header("Access-Control-Allow-Origin", "*");
